@@ -5,7 +5,7 @@ require_once "db.php";
 $db = getDB();
 
 if ($db === null) {
-    echo "Application error";
+    echo "ERROR: No conecta con la base de datos";
     exit;
 }
 
