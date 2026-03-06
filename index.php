@@ -1,15 +1,22 @@
 <?php
-require "config.php";
+
+require_once "db.php";
+
+$db = getDB();
+
+if ($db === null) {
+    echo "Application error";
+    exit;
+}
+
 ?>
 
-<!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
 <title>Animals Database</title>
 <style>
 body { font-family: Arial; margin:40px; }
-table { border-collapse: collapse; margin-bottom:30px; }
+table { border-collapse: collapse; }
 td, th { border:1px solid #ccc; padding:8px; }
 th { background:#eee; }
 </style>
@@ -18,62 +25,46 @@ th { background:#eee; }
 
 <h1>Animals Database</h1>
 
-<h2>Common Names</h2>
+<h2>Scientific and Common Names</h2>
+
 <table>
 <tr>
 <th>ID</th>
-<th>Name</th>
+<th>Scientific Name</th>
+<th>Common Name</th>
 </tr>
 
 <?php
-$stmt = $pdo->query("SELECT id, name FROM common_names");
 
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    echo "<tr>";
-    echo "<td>".$row["id"]."</td>";
-    echo "<td>".$row["name"]."</td>";
-    echo "</tr>";
+try {
+
+    $sql = "
+    SELECT
+        scientific_names.id,
+        scientific_names.name AS scientific_name,
+        common_names.name AS common_name
+    FROM scientific_names
+    LEFT JOIN common_names
+        ON scientific_names.id = common_names.id
+    ";
+
+    $stmt = $db->query($sql);
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+        echo "<tr>";
+        echo "<td>".$row["id"]."</td>";
+        echo "<td>".$row["scientific_name"]."</td>";
+        echo "<td>".$row["common_name"]."</td>";
+        echo "</tr>";
+    }
+
+} catch (Exception $e) {
+
+    error_log("QUERY ERROR ".$e->getMessage());
+    echo "<tr><td colspan='3'>Error loading data</td></tr>";
 }
-?>
 
-</table>
-
-<h2>Locations</h2>
-<table>
-<tr>
-<th>Region</th>
-<th>Name</th>
-</tr>
-
-<?php
-$stmt = $pdo->query("SELECT region, name FROM locations");
-
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    echo "<tr>";
-    echo "<td>".$row["region"]."</td>";
-    echo "<td>".$row["name"]."</td>";
-    echo "</tr>";
-}
-?>
-
-</table>
-
-<h2>Scientific Names</h2>
-<table>
-<tr>
-<th>ID</th>
-<th>Name</th>
-</tr>
-
-<?php
-$stmt = $pdo->query("SELECT id, name FROM scientific_names");
-
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    echo "<tr>";
-    echo "<td>".$row["id"]."</td>";
-    echo "<td>".$row["name"]."</td>";
-    echo "</tr>";
-}
 ?>
 
 </table>
